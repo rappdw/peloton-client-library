@@ -5,11 +5,15 @@ import os
 import requests
 import logging
 import decimal
+import json
+import pathlib
 
 from datetime import datetime
 from datetime import timezone
 from datetime import date
 from .version import __version__
+from typing import Dict
+from pytz import timezone
 
 # Set our base URL location
 _BASE_URL = 'https://api.onepeloton.com'
@@ -75,6 +79,14 @@ try:
     except:
         SSL_CERT = None
 
+    # If set, we'll cache the JSON results from API calls in this directory.
+    # For people with a lot of workouts, this lessons the load on the server
+    # significantly to use cached results rather than hitting the server all the time
+    try:
+        DATA_CACHE_DIR = pathlib.Path(parser.get("peloton", "data_cache_dir"))
+    except:
+        DATA_CACHE_DIR = None
+
 except Exception:
     get_logger().error(
         "No `username` or `password` found in section `peloton` "
@@ -85,6 +97,35 @@ if SHOW_WARNINGS:
     get_logger().setLevel(logging.WARNING)
 else:
     get_logger().setLevel(logging.ERROR)
+
+
+def find_last_workout():
+    '''
+    if a data cache directory exists, find the most recent workout for which there exists cached data
+    '''
+    id = None
+    if DATA_CACHE_DIR:
+        cache = DATA_CACHE_DIR / 'workout'
+        most_resent = 0
+        for file in cache.glob('**/*.json'):
+            with open(file, 'r') as fp:
+                workout = json.load(fp)
+                if workout['created'] > most_resent:
+                    most_resent = workout['created']
+                    id = workout['id']
+    return id
+
+
+def cache_result(type:str, id:str, result:Dict):
+    '''
+    if a data cache directory exists, writhe the json out for th
+    '''
+    if DATA_CACHE_DIR:
+        dir = DATA_CACHE_DIR / type
+        dir.mkdir(parents=True, exist_ok=True)
+        file = dir / f'{id}.json'
+        with open(file, 'w') as fp:
+            json.dump(result, fp, indent=2, sort_keys=True)
 
 
 class NotLoaded:
@@ -260,12 +301,15 @@ class PelotonAPI:
     }
 
     @classmethod
-    def _api_request(cls, uri, params={}):
+    def _api_request(cls, uri, params=None):
         """ Base function that everything will use under the hood to
             interact with the API
 
         Returns a requests response instance, or raises an exception on error
         """
+
+        if params is None:
+            params = {}
 
         # Create a session if we don't have one yet
         if cls.peloton_session is None:
@@ -308,7 +352,7 @@ class PelotonAPI:
             raise PelotonClientError(
                 "The Peloton Client Library requires a `username` "
                 "and `password` be set in "
-                "`/.config/peloton, under section `peloton`")
+                "`/.config/peloton, under section `peloton`", None)
 
         payload = {
             'username_or_email': cls.peloton_username,
@@ -345,9 +389,23 @@ class PelotonUser(PelotonObject):
 
         self.username = kwargs.get('username')
         self.id = kwargs.get('id')
+        self.customized_max_heart_rate = kwargs.get('customized_max_heart_rate')
+        self.estimated_cycling_ftp = kwargs.get('estimated_cycling_ftp')
+        self.cycling_ftp = kwargs.get('cycling_ftp')
+        self.cycling_workout_ftp = kwargs.get('cycling_workout_ftp')
+        self.customized_heart_rate_zones = kwargs.get('customized_heart_rate_zones')
+        self.default_heart_rate_zones = kwargs.get('default_heart_rate_zones')
+
+        cache_result('user', self.id, kwargs)
+
 
     def __str__(self):
         return self.username
+
+    @classmethod
+    def me(cls):
+        return PelotonUserFactory.me()
+
 
 
 class PelotonWorkout(PelotonObject):
@@ -364,23 +422,27 @@ class PelotonWorkout(PelotonObject):
 
         self.id = kwargs.get('id')
 
+        # get timezone of workout
+        tz = timezone(kwargs.get('timezone'))
+
         # This is a bit weird, we can only get ride details if they
         # come up from a users workout list via a join
         self.ride = NotLoaded()
         if kwargs.get('ride') is not None:
-            self.ride = PelotonRide(**kwargs.get('ride'))
+            self.ride = PelotonRide(timezone=tz, **kwargs.get('ride'))
+            # as creating the PelotonRide object will have cached the ride, don't double cache it
+            # replace the "ride" in the json results with the ride id
+            kwargs['ride'] = self.ride.id
+
+        cache_result('workout', self.id, kwargs)
 
         # Not entirely certain what the difference is between these two fields
-        self.created = datetime.fromtimestamp(
-            kwargs.get('created', 0), timezone.utc)
-        self.created_at = datetime.fromtimestamp(
-            kwargs.get('created_at', 0), timezone.utc)
+        self.created = datetime.fromtimestamp(kwargs.get('created', 0), tz)
+        self.created_at = datetime.fromtimestamp(kwargs.get('created_at', 0), tz)
 
         # Time duration of this ride
-        self.start_time = datetime.fromtimestamp(
-            kwargs.get('start_time', 0), timezone.utc)
-        self.end_time = datetime.fromtimestamp(
-            int(kwargs.get('end_time', 0) or 0), timezone.utc)
+        self.start_time = datetime.fromtimestamp(kwargs.get('start_time', 0), tz)
+        self.end_time = datetime.fromtimestamp(int(kwargs.get('end_time', 0) or 0), tz)
 
         # What exercise type is this?
         self.fitness_discipline = kwargs.get('fitness_discipline')
@@ -422,7 +484,7 @@ class PelotonWorkout(PelotonObject):
 
             if attr.startswith('leaderboard_') or attr == 'achievements':\
 
-                # Yes, this gets a bunch of duplicate date, but the
+                # Yes, this gets a bunch of duplicate data, but the
                 # endpoints don't return consistent info!
                 workout = PelotonWorkoutFactory.get(self.id)
 
@@ -453,10 +515,12 @@ class PelotonWorkout(PelotonObject):
         return PelotonWorkoutFactory.get(workout_id)
 
     @classmethod
-    def list(cls):
+    def list(cls, last_id=None):
         """ Return a list of all workouts
+
+        :param last_id: if this isn't None, then the id of the workout not to iterate past when paging through results
         """
-        return PelotonWorkoutFactory.list()
+        return PelotonWorkoutFactory.list(last_id=last_id)
 
     @classmethod
     def latest(cls):
@@ -471,17 +535,34 @@ class PelotonRide(PelotonObject):
     This class should never be invoked directly!
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, timezone, **kwargs):
+        '''
+        create a Peloton Ride from the JSON returned by the API
+
+        :param timezone: the timezone of the workout from which the Ride was taken
+        '''
 
         self.title = kwargs.get('title')
         self.id = kwargs.get('id')
         self.description = kwargs.get('description')
         self.duration = kwargs.get('duration')
+        self.difficulty_rating_avg = kwargs.get('difficulty_rating_avg')
+        self.difficulty_rating_count = kwargs.get('difficulty_rating_count')
+        self.difficulty_estimate = kwargs.get('difficulty_estimate')
+        self.difficulty_level = kwargs.get('difficulty_level')
+        self.fitness_discipline = kwargs.get('fitness_discipline')
+        self.original_air_time = datetime.fromtimestamp(kwargs.get('original_air_time', 0), timezone)
+        self.title = kwargs.get('title')
 
         # When we make this Ride call from the workout factory, there
         # is no instructor data
         if kwargs.get('instructor') is not None:
             self.instructor = PelotonInstructor(**kwargs.get('instructor'))
+            # as creating the PelotonInstructor object will have cached the instructor, don't double cache it
+            # replace the "instructor" in the json results with the instructor id
+            kwargs['instructor'] = self.instructor.id
+
+        cache_result('ride', self.id, kwargs)
 
     def __str__(self):
         return self.title
@@ -528,9 +609,12 @@ class PelotonWorkoutMetrics(PelotonObject):
     """ An object that describes all of the metrics of a given workout
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, id, **kwargs):
         """ Take a metrics set and objectify it
+        :param id: the id of the workout for which these metrics are associated
         """
+
+        cache_result('metrics', id, kwargs)
 
         self.workout_duration = kwargs.get('duration')
         self.fitness_discipline = kwargs.get('segment_list')[0]['metrics_type'] if len(
@@ -573,6 +657,7 @@ class PelotonInstructor(PelotonObject):
 
     def __init__(self, **kwargs):
 
+        self.id = kwargs.get('id')
         self.name = kwargs.get('name')
         self.first_name = kwargs.get('first_name')
         self.last_name = kwargs.get('last_name')
@@ -582,6 +667,9 @@ class PelotonInstructor(PelotonObject):
         self.quote = kwargs.get('quote')
         self.background = kwargs.get('background')
         self.short_bio = kwargs.get('short_bio')
+
+        cache_result('instructor', self.id, kwargs)
+
 
     def __str__(self):
         return self.name
@@ -617,9 +705,24 @@ class PelotonWorkoutFactory(PelotonAPI):
     """
 
     @classmethod
-    def list(cls, results_per_page=10):
+    def check_for_last_id(cls, workouts, last_id):
+        '''
+        checks to see if the terminal id is in the workout block
+        :return index to halt iteration (or len of workout block if id not found)
+        '''
+        if last_id:
+            for idx, workout in enumerate(workouts):
+                if workout['id'] == last_id:
+                    return idx - 1
+        else:
+            return len(workouts)
+
+    @classmethod
+    def list(cls, last_id=None, results_per_page=10):
         """ Return a list of PelotonWorkout instances that describe
             each workout
+
+            :param last_id: if this isn't None, then the id of the workout not to iterate past when paging through results
         """
 
         # We need a user ID to list all workouts. @pelotoncycle, please
@@ -636,16 +739,19 @@ class PelotonWorkoutFactory(PelotonAPI):
 
         # Get our first page, which includes number of successive pages
         res = cls._api_request(uri, params).json()
+        max_idx = cls.check_for_last_id(res['data'], last_id=last_id)
 
         # Add this pages data to our return list
-        ret = [PelotonWorkout(**workout) for workout in res['data']]
+        ret = [PelotonWorkout(**workout) for i, workout in enumerate(res['data']) if i <= max_idx]
 
         # We've got page 0, so start with page 1
         for i in range(1, res['page_count']):
-
+            if max_idx != len(res['data']):
+                break
             params['page'] += 1
             res = cls._api_request(uri, params).json()
-            [ret.append(PelotonWorkout(**workout)) for workout in res['data']]
+            max_idx = cls.check_for_last_id(res['data'], last_id=last_id)
+            [ret.append(PelotonWorkout(**workout)) for i, workout in enumerate(res['data']) if i <= max_idx]
 
         return ret
 
@@ -699,4 +805,26 @@ class PelotonWorkoutMetricsFactory(PelotonAPI):
         }
 
         res = cls._api_request(uri, params).json()
-        return PelotonWorkoutMetrics(**res)
+        return PelotonWorkoutMetrics(id=workout_id, **res)
+
+class PelotonUserFactory(PelotonAPI):
+    """ Class to handle fetching and transformation of metric data
+    """
+
+    @classmethod
+    def me(cls):
+        """ Get user details. This requires two calls as some of the data isn't present in either call, so
+        merge the json results before initializing a PelotonUser
+        """
+
+        # get the user id for the first api call
+        if cls.user_id is None:
+            cls._create_api_session()
+
+        uri = '/api/user/{}'.format(cls.user_id)
+        user_results = cls._api_request(uri).json()
+
+        uri = '/api/me'
+        me_results = PelotonAPI._api_request(uri).json()
+        return PelotonUser(**{**me_results, **user_results})
+

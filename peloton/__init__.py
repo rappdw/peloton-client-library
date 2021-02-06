@@ -11,6 +11,8 @@ from .peloton import PelotonMetric
 from .peloton import PelotonInstructor
 from .peloton import PelotonWorkoutSegment
 from .peloton import PelotonWorkoutFactory
+from .peloton import PelotonWorkoutMetricsFactory
+from .peloton import find_last_workout
 
 _ALL_ = [
     "NotLoaded",
@@ -24,5 +26,7 @@ _ALL_ = [
     "PelotonInstructor",
     "PelotonWorkoutSegment",
 
-    "PelotonWorkoutFactory"
+    "PelotonWorkoutFactory",
+    "PelotonWorkoutMetricsFactory",
+    "find_last_workout"
 ]

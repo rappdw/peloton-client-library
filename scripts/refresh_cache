@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+from peloton import PelotonUser, PelotonWorkout, PelotonWorkoutMetricsFactory, find_last_workout
+
+if __name__ == '__main__':
+
+    workouts = PelotonWorkout.list(last_id=find_last_workout())
+    print(f"Found {len(workouts)} since the last workout we've cached")
+    # because the list call doesn't provide fields like leaderboard rank, achievements, etc., call
+    # PelotonWorkout.get() for each workout in the list. This will fill out the remaining fields
+    #
+    # also, retrieve the metrics for each workout
+    for workout in workouts:
+        print(f'{workout.start_time} - {workout.ride.title} with {workout.ride.instructor}')
+        PelotonWorkout.get(workout.id)
+        PelotonWorkoutMetricsFactory.get(workout.id)
+
+    # retrieve my user record as well
+    PelotonUser.me()
