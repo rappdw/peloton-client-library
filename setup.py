@@ -5,7 +5,7 @@ with open('README.md', 'r', encoding='utf-8') as f:
 
 setuptools.setup(
     name='peloton',
-    version='0.0.3',
+    version='0.0.2',
     packages=['peloton'],
     description='A Python library for Peloton data.',
     long_description=long_description,
