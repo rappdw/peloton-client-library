@@ -5,7 +5,7 @@ with open('README.md', 'r', encoding='utf-8') as f:
 
 setuptools.setup(
     name='peloton',
-    version='0.0.2',
+    version='0.0.3',
     packages=['peloton'],
     description='A Python library for Peloton data.',
     long_description=long_description,
@@ -28,4 +28,10 @@ setuptools.setup(
     },
     exclude_package_data={},
     include_package_data=True,
+    install_requires=[
+        'pytz>=2021.1'
+    ],
+    scripts=[
+        'scripts/refresh_cache'
+    ]
 )

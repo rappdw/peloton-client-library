@@ -44,6 +44,9 @@ ssl_verify = True
 # Optional: Filepath to a local cert bundle. Useful when SSL MITM is in play (default: None)
 ssl_cert = ''
 
+# Optional: Filepath to a directory to cache json responses from API calls
+data_cache_dir = ''
+
 ```
 
 You may also specify the environment variables `PELOTON_USERNAME` and `PELOTON_PASSWORD` which will take precedence over the config file.
