@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+
+# import pandas as pd
+# from datetime import datetime
+from peloton import Analysis
+
+if __name__ == '__main__':
+    analysis = Analysis()
+    print(f'You have exercised {analysis.accumulated_minutes:,} minutes so far this year.')
+    print(f'We estimate you will complete {int(analysis.eoy_estimate):,} minutes this year.')
+    print(f'Current daily streak is {analysis.current_daily_streak:,} days.')
+    print(f'Current weekly streak is {analysis.current_weekly_streak:,} weeks.')
+
+    # pd.set_option("display.max_rows", None)
+    # pd.set_option("display.max_columns", None)
+    # print('\n\nFollowing is the list of your workouts...\n\n')
+    # print(analysis.get_printable_workouts().loc[f'{datetime.now().year}'].sort_index(ascending=False))

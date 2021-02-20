@@ -29,9 +29,11 @@ setuptools.setup(
     exclude_package_data={},
     include_package_data=True,
     requires=[
-        'pytz>=2021.1'
+        'pandas',
+        'pytz'
     ],
     scripts=[
-        'scripts/refresh_cache'
+        'scripts/refresh_cache',
+        'scripts/print_my_info',
     ]
 )

@@ -1,19 +1,18 @@
 #! /usr/bin/env python3.6
 # -*- coding: latin-1 -*-
 
-import os
 import requests
-import logging
 import decimal
 import json
-import pathlib
 
 from datetime import datetime
 from datetime import timezone
 from datetime import date
-from .version import __version__
 from typing import Dict
 from pytz import timezone
+
+from .version import __version__
+from .config import Config, get_logger
 
 # Set our base URL location
 _BASE_URL = 'https://api.onepeloton.com'
@@ -21,91 +20,15 @@ _BASE_URL = 'https://api.onepeloton.com'
 # Being friendly, let Peloton know who we are (eg: not the web ui)
 _USER_AGENT = "peloton-client-library/{}".format(__version__)
 
-
-def get_logger():
-    """ To change log level from calling code, use something like
-        logging.getLogger("peloton").setLevel(logging.DEBUG)
-    """
-    logger = logging.getLogger("peloton")
-    if not logger.handlers:
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter(
-            '%(asctime)s %(levelname)s: %(message)s '
-            '[in %(pathname)s:%(lineno)d]')
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-
-    return logger
-
-
-SHOW_WARNINGS = False
-
-try:
-
-    import configparser
-    parser = configparser.ConfigParser()
-    conf_path = os.environ.get("PELOTON_CONFIG", "~/.config/peloton")
-    parser.read(os.path.expanduser(conf_path))
-
-    # Mandatory credentials
-    PELOTON_USERNAME = os.environ.get("PELOTON_USERNAME") \
-        or parser.get("peloton", "username")
-    PELOTON_PASSWORD = os.environ.get("PELOTON_PASSWORD") \
-        or parser.get("peloton", "password")
-
-    # Additional option to show or hide warnings
-    try:
-        ignore_warnings = parser.getboolean("peloton", "ignore_warnings")
-        SHOW_WARNINGS = False if ignore_warnings else True
-
-    except:
-        SHOW_WARNINGS = False
-
-    if SHOW_WARNINGS:
-        get_logger().setLevel(logging.WARNING)
-    else:
-        get_logger().setLevel(logging.ERROR)
-
-    # Whether or not to verify SSL connections (defaults to True)
-    try:
-        SSL_VERIFY = parser.getboolean("peloton", "ssl_verify")
-    except:
-        SSL_VERIFY = True
-
-    # If set, we'll use this cert to verify against. Useful when you're
-    # stuck behind SSL MITM
-    try:
-        SSL_CERT = parser.get("peloton", "ssl_cert")
-    except:
-        SSL_CERT = None
-
-    # If set, we'll cache the JSON results from API calls in this directory.
-    # For people with a lot of workouts, this lessons the load on the server
-    # significantly to use cached results rather than hitting the server all the time
-    try:
-        DATA_CACHE_DIR = pathlib.Path(parser.get("peloton", "data_cache_dir"))
-    except:
-        DATA_CACHE_DIR = None
-
-except Exception:
-    get_logger().error(
-        "No `username` or `password` found in section `peloton` "
-        "in ~/.config/peloton\n"
-        "Please ensure you specify one prior to utilizing the API\n")
-
-if SHOW_WARNINGS:
-    get_logger().setLevel(logging.WARNING)
-else:
-    get_logger().setLevel(logging.ERROR)
-
+config = Config()
 
 def find_last_workout():
     '''
     if a data cache directory exists, find the most recent workout for which there exists cached data
     '''
     id = None
-    if DATA_CACHE_DIR:
-        cache = DATA_CACHE_DIR / 'workout'
+    if config.DATA_CACHE_DIR:
+        cache = config.DATA_CACHE_DIR / 'workout'
         most_resent = 0
         for file in cache.glob('**/*.json'):
             with open(file, 'r') as fp:
@@ -120,8 +43,8 @@ def cache_result(type:str, id:str, result:Dict):
     '''
     if a data cache directory exists, writhe the json out for th
     '''
-    if DATA_CACHE_DIR:
-        dir = DATA_CACHE_DIR / type
+    if config.DATA_CACHE_DIR:
+        dir = config.DATA_CACHE_DIR / type
         dir.mkdir(parents=True, exist_ok=True)
         file = dir / f'{id}.json'
         with open(file, 'w') as fp:
@@ -343,10 +266,10 @@ class PelotonAPI:
         """
 
         if cls.peloton_username is None:
-            cls.peloton_username = PELOTON_USERNAME
+            cls.peloton_username = config.PELOTON_USERNAME
 
         if cls.peloton_password is None:
-            cls.peloton_password = PELOTON_PASSWORD
+            cls.peloton_password = config.PELOTON_PASSWORD
 
         if cls.peloton_username is None or cls.peloton_password is None:
             raise PelotonClientError(
@@ -609,12 +532,12 @@ class PelotonWorkoutMetrics(PelotonObject):
     """ An object that describes all of the metrics of a given workout
     """
 
-    def __init__(self, id, **kwargs):
+    def __init__(self, **kwargs):
         """ Take a metrics set and objectify it
         :param id: the id of the workout for which these metrics are associated
         """
 
-        cache_result('metrics', id, kwargs)
+        cache_result('metrics', kwargs.get('id'), kwargs)
 
         self.workout_duration = kwargs.get('duration')
         self.fitness_discipline = kwargs.get('segment_list')[0]['metrics_type'] if len(
@@ -714,8 +637,7 @@ class PelotonWorkoutFactory(PelotonAPI):
             for idx, workout in enumerate(workouts):
                 if workout['id'] == last_id:
                     return idx - 1
-        else:
-            return len(workouts)
+        return len(workouts)
 
     @classmethod
     def list(cls, last_id=None, results_per_page=10):
@@ -805,7 +727,8 @@ class PelotonWorkoutMetricsFactory(PelotonAPI):
         }
 
         res = cls._api_request(uri, params).json()
-        return PelotonWorkoutMetrics(id=workout_id, **res)
+        res['id'] = workout_id
+        return PelotonWorkoutMetrics(**res)
 
 class PelotonUserFactory(PelotonAPI):
     """ Class to handle fetching and transformation of metric data

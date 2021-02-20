@@ -10,7 +10,10 @@ if __name__ == '__main__':
     #
     # also, retrieve the metrics for each workout
     for workout in workouts:
-        print(f'{workout.start_time} - {workout.ride.title} with {workout.ride.instructor}')
+        if hasattr(workout.ride, 'instructor'):
+            print(f'{workout.start_time} - {workout.ride.title} with {workout.ride.instructor}')
+        else:
+            print(f'{workout.start_time} - {workout.ride.title}')
         PelotonWorkout.get(workout.id)
         PelotonWorkoutMetricsFactory.get(workout.id)
 
