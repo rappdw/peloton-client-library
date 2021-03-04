@@ -544,7 +544,7 @@ class PelotonWorkoutMetrics(PelotonObject):
             kwargs.get('segment_list')) else ''
 
         # Build summary attributes
-        metric_summaries = ['total_output', 'distance', 'calories']
+        metric_summaries = ['total_output', 'distance', 'calories', 'elevation']
         for metric in kwargs.get('summaries'):
             if metric['slug'] not in metric_summaries:
                 get_logger().warning(
@@ -559,7 +559,7 @@ class PelotonWorkoutMetrics(PelotonObject):
 
         # Build metric details
         metric_categories = [
-            'output', 'cadence', 'resistance', 'speed', 'heart_rate']
+            'output', 'cadence', 'resistance', 'speed', 'heart_rate', 'pace', 'incline']
         for metric in kwargs.get('metrics'):
 
             if metric['slug'] not in metric_categories:
