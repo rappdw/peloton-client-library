@@ -1,0 +1,5 @@
+.git
+*.egg-info
+.ipynb_checkpoints
+.Trash-1000
+.venv

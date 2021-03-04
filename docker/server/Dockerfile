@@ -1,0 +1,17 @@
+FROM python:3.9.2-slim
+
+RUN mkdir -p /peloton
+RUN mkdir -p /Users/drapp/dev/peloton-data
+RUN mkdir -p /peloton-server
+
+COPY ./ /peloton/
+COPY ./docker/server/app.py /peloton-server
+
+RUN pip install -e /peloton; \
+    pip install flask
+
+WORKDIR /peloton-server
+ENTRYPOINT ["flask"]
+CMD ["run", "--host", "0.0.0.0" ]
+
+# see: https://stackoverflow.com/questions/30323224/deploying-a-minimal-flask-app-in-docker-server-connection-issues/43015007#43015007
