@@ -28,12 +28,15 @@ setuptools.setup(
     },
     exclude_package_data={},
     include_package_data=True,
-    requires=[
-        'pandas',
-        'pytz'
+    install_requires=[
+        'pandas>=1.2.3',
+        'pytz>=2021.1',
+        'requests>=2.25.1'
     ],
+    entry_points = {
+        'console_scripts': ['refresh_cache=peloton.update:refresh'],
+    },
     scripts=[
-        'scripts/refresh_cache',
         'scripts/print_my_info',
     ]
 )

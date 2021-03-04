@@ -13,7 +13,7 @@ from .peloton import PelotonInstructor
 from .peloton import PelotonWorkoutSegment
 from .peloton import PelotonWorkoutFactory
 from .peloton import PelotonWorkoutMetricsFactory
-from .peloton import find_last_workout
+from .update import refresh
 
 _ALL_ = [
     "Analysis",
@@ -30,5 +30,5 @@ _ALL_ = [
 
     "PelotonWorkoutFactory",
     "PelotonWorkoutMetricsFactory",
-    "find_last_workout"
+    "refresh"
 ]
