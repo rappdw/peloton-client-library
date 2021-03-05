@@ -559,7 +559,7 @@ class PelotonWorkoutMetrics(PelotonObject):
 
         # Build metric details
         metric_categories = [
-            'output', 'cadence', 'resistance', 'speed', 'heart_rate', 'pace', 'incline']
+            'output', 'cadence', 'resistance', 'speed', 'heart_rate', 'pace', 'incline', 'altitude']
         for metric in kwargs.get('metrics'):
 
             if metric['slug'] not in metric_categories:

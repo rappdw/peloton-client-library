@@ -5,9 +5,9 @@ RUN mkdir -p /Users/drapp/dev/peloton-data
 RUN mkdir -p /peloton-server
 
 COPY ./ /peloton/
-COPY ./docker/server/app.py /peloton-server
+COPY ./docker/server/app /peloton-server
 
-RUN pip install -e /peloton; \
+RUN pip install /peloton; \
     pip install flask
 
 WORKDIR /peloton-server

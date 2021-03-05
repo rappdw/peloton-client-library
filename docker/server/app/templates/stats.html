@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Personal Peloton Stats</title>
+    <style>
+        body {background-color: powderblue;}
+        /* iphone 12 & 12 Pro */
+        @media only screen
+        and (device-width: 390px)
+        and (device-height: 844px)
+        and (-webkit-device-pixel-ratio: 3) {
+          h1 { font-size: 48px; }
+          p { font-size: 36px; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Yearly Goal Tracking</h1>
+    <p>You have exercised {{ "{:,}".format(yearly.accumulated_minutes) }} minutes so far this year.</p>
+    <p>We estimate you will complete {{ "{:,}".format(yearly.eoy_estimate) }} minutes by end of year.</p>
+    <h1>Current Streak</h1>
+    <p>Your current daily streak is {{ streak.daily }} days.</p>
+    <p>Your current weekly streak is {{ streak.weekly }} weeks.</p>
+</body>
+</html>
