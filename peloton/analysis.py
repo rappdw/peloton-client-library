@@ -17,7 +17,7 @@ class Analysis:
 
     # for some reason, my calculation of workout time for the year is 6 minutes greater than Peloton's, allow a
     # fudge_factor to reconcile this
-    def __init__(self, cache_dir:Path=None, fudge_factor:int=-6):
+    def __init__(self, cache_dir:Path=None, fudge_factor:int=-5):
         if cache_dir is None:
             cache_dir = Config().DATA_CACHE_DIR
         self.workouts = _retrieve_all(cache_dir / 'workout')
