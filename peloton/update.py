@@ -1,5 +1,6 @@
 import logging
-from .peloton import PelotonUser, PelotonWorkout, PelotonWorkoutMetricsFactory, find_last_workout
+from .api import find_last_workout
+from .peloton import PelotonUser, PelotonWorkout, PelotonWorkoutMetricsFactory
 from .config import get_logger
 
 def refresh():

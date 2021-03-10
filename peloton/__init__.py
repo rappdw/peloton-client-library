@@ -2,9 +2,9 @@
 # -*- coding: latin-1 -*-
 
 from .analysis import Analysis
+from .api import PelotonAPI
+from .errors import PelotonException
 from .peloton import NotLoaded
-from .peloton import PelotonException
-from .peloton import PelotonAPI
 from .peloton import PelotonUser
 from .peloton import PelotonWorkout
 from .peloton import PelotonRide
