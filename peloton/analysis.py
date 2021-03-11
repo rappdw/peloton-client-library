@@ -3,14 +3,14 @@ import pandas as pd
 from datetime import datetime
 from pathlib import Path
 from .config import Config
-from .challenge import PelotonChallengeFactory
 
 
-def _retrieve_all(directory):
+def _retrieve(directory, id = None):
     objs = {}
     for file in directory.iterdir():
-        with open(file, 'r') as fp:
-            objs[file.stem] = json.load(fp)
+        if id is None or file.stem == id:
+            with open(file, 'r') as fp:
+                objs[file.stem] = json.load(fp)
     return objs
 
 
@@ -22,13 +22,12 @@ class Analysis:
         if cache_dir is None:
             cache_dir = Config().DATA_CACHE_DIR
 
-        annual_challenge = PelotonChallengeFactory.get('4ee56696ffcb442592607af5004503e3')
-
-        self.workouts = _retrieve_all(cache_dir / 'workout')
-        # self.instructors = _retrieve_all(cache_dir / 'instructor')
-        # self.rides = _retrieve_all(cache_dir / 'ride')
-        self.users = _retrieve_all(cache_dir / 'user')
-        # self.metrics = _retrieve_all(cache_dir / 'metrics')
+        self.workouts = _retrieve(cache_dir / 'workout')
+        # self.instructors = _retrieve(cache_dir / 'instructor')
+        # self.rides = _retrieve(cache_dir / 'ride')
+        self.users = _retrieve(cache_dir / 'user')
+        # self.metrics = _retrieve(cache_dir / 'metrics')
+        self.annual_challenge = _retrieve(cache_dir / 'challenge', '4ee56696ffcb442592607af5004503e3')
 
         self.wdf = self._update_workouts(pd.DataFrame(self.workouts.values()))
         # self.rdf = pd.DataFrame(self.rides.values())
@@ -46,7 +45,7 @@ class Analysis:
         # pdf = pdf.loc[f'{now.year}'].sort_index(ascending=False)
         #
         # self.accumulated_minutes = (pdf.duration.sum() // 60) + fudge_factor
-        self.accumulated_minutes = annual_challenge.progress_metric
+        self.accumulated_minutes = self.annual_challenge['4ee56696ffcb442592607af5004503e3']['progress']['metric_value']
         self.eoy_estimate = self.accumulated_minutes / day_of_year * days_in_year
 
     def get_printable_workouts(self):
