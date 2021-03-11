@@ -55,7 +55,8 @@ class PelotonAPI:
     # Headers we'll be using for each request
     headers = {
         "Content-Type": "application/json",
-        "User-Agent": _USER_AGENT
+        "User-Agent": _USER_AGENT,
+        "Peloton-Platform": "web"
     }
 
     @classmethod

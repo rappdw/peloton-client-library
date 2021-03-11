@@ -1,5 +1,6 @@
 from .analysis import Analysis
 from .api import PelotonAPI
+from .challenge import PelotonChallenge, PelotonChallengeFactory
 from .errors import PelotonException
 from .instructor import PelotonInstructor
 from .metrics import PelotonMetric
@@ -16,12 +17,14 @@ _ALL_ = [
     "PelotonAPI",
 
     "PelotonUser",
+    "PelotonChallenge",
     "PelotonWorkout",
     "PelotonRide",
     "PelotonMetric",
     "PelotonInstructor",
     "PelotonWorkoutSegment",
 
+    "PelotonChallengeFactory",
     "PelotonUserFactory",
     "PelotonWorkoutFactory",
     "PelotonWorkoutMetricsFactory",

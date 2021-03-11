@@ -3,6 +3,7 @@ from .api import find_last_workout
 from .config import get_logger
 from .user import PelotonUserFactory
 from .workout import PelotonWorkout, PelotonWorkoutMetricsFactory
+from .challenge import PelotonChallengeFactory
 
 
 def refresh():
@@ -20,6 +21,9 @@ def refresh():
             get_logger().info(f'{workout.start_time} - {workout.ride.title}')
         PelotonWorkout.get(workout.id)
         PelotonWorkoutMetricsFactory.get(workout.id)
+
+    # retrieve challenges
+    PelotonChallengeFactory.list()
 
     # retrieve my user record as well
     PelotonUserFactory.me()

@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime
 from pathlib import Path
 from .config import Config
+from .challenge import PelotonChallengeFactory
 
 
 def _retrieve_all(directory):
@@ -20,15 +21,18 @@ class Analysis:
     def __init__(self, cache_dir: Path = None, fudge_factor: int = -5):
         if cache_dir is None:
             cache_dir = Config().DATA_CACHE_DIR
+
+        annual_challenge = PelotonChallengeFactory.get('4ee56696ffcb442592607af5004503e3')
+
         self.workouts = _retrieve_all(cache_dir / 'workout')
-        self.instructors = _retrieve_all(cache_dir / 'instructor')
-        self.rides = _retrieve_all(cache_dir / 'ride')
+        # self.instructors = _retrieve_all(cache_dir / 'instructor')
+        # self.rides = _retrieve_all(cache_dir / 'ride')
         self.users = _retrieve_all(cache_dir / 'user')
-        self.metrics = _retrieve_all(cache_dir / 'metrics')
+        # self.metrics = _retrieve_all(cache_dir / 'metrics')
 
         self.wdf = self._update_workouts(pd.DataFrame(self.workouts.values()))
-        self.rdf = pd.DataFrame(self.rides.values())
-        self.idf = pd.DataFrame(self.instructors.values())
+        # self.rdf = pd.DataFrame(self.rides.values())
+        # self.idf = pd.DataFrame(self.instructors.values())
 
         self.current_daily_streak = self._get_current_streak_in_days()
         user = next(iter(self.users.values()))
@@ -38,10 +42,11 @@ class Analysis:
         day_of_year = now.timetuple().tm_yday
         days_in_year = datetime(now.year, 12, 31, 0, 0).timetuple().tm_yday
 
-        pdf = self.get_printable_dataframe(self.wdf, self.rdf, self.idf)
-        pdf = pdf.loc[f'{now.year}'].sort_index(ascending=False)
-
-        self.accumulated_minutes = (pdf.duration.sum() // 60) + fudge_factor
+        # pdf = self.get_printable_dataframe(self.wdf, self.rdf, self.idf)
+        # pdf = pdf.loc[f'{now.year}'].sort_index(ascending=False)
+        #
+        # self.accumulated_minutes = (pdf.duration.sum() // 60) + fudge_factor
+        self.accumulated_minutes = annual_challenge.progress_metric
         self.eoy_estimate = self.accumulated_minutes / day_of_year * days_in_year
 
     def get_printable_workouts(self):
