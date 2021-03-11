@@ -1,19 +1,13 @@
-#! /usr/bin/env python3.6
-# -*- coding: latin-1 -*-
-
 from .analysis import Analysis
 from .api import PelotonAPI
 from .errors import PelotonException
-from .peloton import NotLoaded
-from .peloton import PelotonUser
-from .peloton import PelotonWorkout
-from .peloton import PelotonRide
-from .peloton import PelotonMetric
-from .peloton import PelotonInstructor
-from .peloton import PelotonWorkoutSegment
-from .peloton import PelotonWorkoutFactory
-from .peloton import PelotonWorkoutMetricsFactory
+from .instructor import PelotonInstructor
+from .metrics import PelotonMetric
+from .ride import PelotonRide
+from .segment import PelotonWorkoutSegment
 from .update import refresh
+from .user import PelotonUser, PelotonUserFactory
+from .workout import PelotonWorkout, PelotonWorkoutFactory, PelotonWorkoutMetricsFactory
 
 _ALL_ = [
     "Analysis",
@@ -28,6 +22,7 @@ _ALL_ = [
     "PelotonInstructor",
     "PelotonWorkoutSegment",
 
+    "PelotonUserFactory",
     "PelotonWorkoutFactory",
     "PelotonWorkoutMetricsFactory",
     "refresh"

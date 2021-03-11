@@ -17,7 +17,7 @@ class Analysis:
 
     # for some reason, my calculation of workout time for the year is 6 minutes greater than Peloton's, allow a
     # fudge_factor to reconcile this
-    def __init__(self, cache_dir:Path=None, fudge_factor:int=-5):
+    def __init__(self, cache_dir: Path = None, fudge_factor: int = -5):
         if cache_dir is None:
             cache_dir = Config().DATA_CACHE_DIR
         self.workouts = _retrieve_all(cache_dir / 'workout')
@@ -47,8 +47,10 @@ class Analysis:
     def get_printable_workouts(self):
         return self.get_printable_dataframe(self.wdf, self.rdf, self.idf)
 
-    def _update_workouts(self, df):
-        # add/update columns to provide basis of interesting calculations, e.g. streaks, progress towards yearly acheivement, etc.
+    @staticmethod
+    def _update_workouts(df):
+        # add/update columns to provide basis of interesting calculations, e.g. streaks, progress towards yearly
+        # achievement, etc.
         # convert unix timestamp to datetime
         df['created'] = pd.to_datetime(df.created, unit='s', utc=True)
         df['device_time_created_at'] = pd.to_datetime(df.device_time_created_at, unit='s', utc=True)
@@ -60,12 +62,17 @@ class Analysis:
     def _get_current_streak_in_days(self):
         # TODO: if the latest work out isn't today or yesterday, streak should be 0 or 1
         d = pd.Timedelta(1, 'D')
-        stretch = self.wdf.sort_values('device_time_created_at', ascending=False, ignore_index=True)[['device_time_created_at']]
+        stretch = self.wdf.sort_values(
+            'device_time_created_at',
+            ascending=False,
+            ignore_index=True
+        )[['device_time_created_at']]
         stretch['date'] = stretch.device_time_created_at.dt.date
         consecutive = stretch.date.diff().abs().le(d)[1:].idxmin(axis=1)
         return (datetime.now().date() - stretch[consecutive - 1:consecutive].date.iloc[0]).days + 1
 
-    def get_printable_dataframe(self, df, rdf, idf, df_fields=None, rdf_fields=None, idf_fields=None):
+    @staticmethod
+    def get_printable_dataframe(df, rdf, idf, df_fields=None, rdf_fields=None, idf_fields=None):
         if df_fields is None:
             df_fields = ['id', 'ride', 'duration', 'device_time_created_at']
         if rdf_fields is None:

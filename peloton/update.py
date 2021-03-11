@@ -1,7 +1,9 @@
 import logging
 from .api import find_last_workout
-from .peloton import PelotonUser, PelotonWorkout, PelotonWorkoutMetricsFactory
 from .config import get_logger
+from .user import PelotonUserFactory
+from .workout import PelotonWorkout, PelotonWorkoutMetricsFactory
+
 
 def refresh():
     get_logger().setLevel(logging.INFO)
@@ -20,4 +22,4 @@ def refresh():
         PelotonWorkoutMetricsFactory.get(workout.id)
 
     # retrieve my user record as well
-    PelotonUser.me()
+    PelotonUserFactory.me()

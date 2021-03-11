@@ -33,5 +33,3 @@ class PelotonRedirectError(PelotonException):
         super(PelotonException, self).__init__(self, message)
         self.message = message
         self.response = response
-
-

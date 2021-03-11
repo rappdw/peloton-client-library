@@ -1,8 +1,6 @@
 import requests
 import json
 
-from typing import Dict
-
 from .config import Config, get_logger
 from .errors import PelotonRedirectError, PelotonClientError, PelotonServerError
 from .version import __version__
@@ -15,11 +13,12 @@ _USER_AGENT = "peloton-client-library/{}".format(__version__)
 
 config = Config()
 
+
 def find_last_workout():
-    '''
+    """
     if a data cache directory exists, find the most recent workout for which there exists cached data
-    '''
-    id = None
+    """
+    workout_id = None
     if config.DATA_CACHE_DIR:
         cache = config.DATA_CACHE_DIR / 'workout'
         most_resent = 0
@@ -28,27 +27,15 @@ def find_last_workout():
                 workout = json.load(fp)
                 if workout['created'] > most_resent:
                     most_resent = workout['created']
-                    id = workout['id']
-    return id
-
-
-def cache_result(type:str, id:str, result:Dict):
-    '''
-    if a data cache directory exists, writhe the json out for th
-    '''
-    if config.DATA_CACHE_DIR:
-        dir = config.DATA_CACHE_DIR / type
-        dir.mkdir(parents=True, exist_ok=True)
-        file = dir / f'{id}.json'
-        with open(file, 'w') as fp:
-            json.dump(result, fp, indent=2, sort_keys=True)
+                    workout_id = workout['id']
+    return workout_id
 
 
 class PelotonAPI:
     """ Base class that factory classes within this module inherit from.
     This class is _not_ meant to be utilized directly, so don't do it.
 
-    Core "working" class of the Peolton API Module
+    Core "working" class of the Peloton API Module
     """
 
     peloton_username = None

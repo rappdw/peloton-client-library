@@ -2,6 +2,7 @@ import logging
 import os
 import pathlib
 
+
 def get_logger():
     """ To change log level from calling code, use something like
         logging.getLogger("peloton").setLevel(logging.DEBUG)
@@ -16,6 +17,7 @@ def get_logger():
         logger.addHandler(handler)
 
     return logger
+
 
 class Config:
 
@@ -34,7 +36,7 @@ class Config:
             self.PELOTON_PASSWORD = os.environ.get("PELOTON_PASSWORD") \
                 or parser.get("peloton", "password")
 
-        except (configparser.NoOptionError, configparser.NoSectionError) as e:
+        except (configparser.NoOptionError, configparser.NoSectionError):
             get_logger().warning(
                 "No `username` or `password` found in section `peloton` "
                 "in ~/.config/peloton\n"
