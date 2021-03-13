@@ -5,10 +5,10 @@ from pathlib import Path
 from .config import Config
 
 
-def _retrieve(directory, id = None):
+def _retrieve(directory, json_id=None):
     objs = {}
     for file in directory.iterdir():
-        if id is None or file.stem == id:
+        if json_id is None or file.stem == json_id:
             with open(file, 'r') as fp:
                 objs[file.stem] = json.load(fp)
     return objs
@@ -23,15 +23,15 @@ class Analysis:
             cache_dir = Config().DATA_CACHE_DIR
 
         self.workouts = _retrieve(cache_dir / 'workout')
-        # self.instructors = _retrieve(cache_dir / 'instructor')
-        # self.rides = _retrieve(cache_dir / 'ride')
+        self.instructors = _retrieve(cache_dir / 'instructor')
+        self.rides = _retrieve(cache_dir / 'ride')
         self.users = _retrieve(cache_dir / 'user')
-        # self.metrics = _retrieve(cache_dir / 'metrics')
+        self.metrics = _retrieve(cache_dir / 'metrics')
         self.annual_challenge = _retrieve(cache_dir / 'challenge', '4ee56696ffcb442592607af5004503e3')
 
         self.wdf = self._update_workouts(pd.DataFrame(self.workouts.values()))
-        # self.rdf = pd.DataFrame(self.rides.values())
-        # self.idf = pd.DataFrame(self.instructors.values())
+        self.rdf = pd.DataFrame(self.rides.values())
+        self.idf = pd.DataFrame(self.instructors.values())
 
         self.current_daily_streak = self._get_current_streak_in_days()
         user = next(iter(self.users.values()))

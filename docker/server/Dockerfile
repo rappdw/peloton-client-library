@@ -7,11 +7,15 @@ RUN mkdir -p /peloton-server
 COPY ./ /peloton/
 COPY ./docker/server/app /peloton-server
 
-RUN pip install /peloton; \
-    pip install flask
+RUN pip install \
+        /peloton \
+        flask \
+        panel \
+        holoviews \
+        bokeh \
+    ;
 
 WORKDIR /peloton-server
-ENTRYPOINT ["flask"]
-CMD ["run", "--host", "0.0.0.0" ]
+ENTRYPOINT ["/peloton-server/startup.sh"]
 
 # see: https://stackoverflow.com/questions/30323224/deploying-a-minimal-flask-app-in-docker-server-connection-issues/43015007#43015007
