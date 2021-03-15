@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Update Latest Stats</title>
+    <style>
+        body {background-color: powderblue;}
+        /* iphone 12 & 12 Pro */
+        @media only screen
+        and (device-width: 390px)
+        and (device-height: 844px)
+        and (-webkit-device-pixel-ratio: 3) {
+          h1 { font-size: 48px; }
+          p { font-size: 36px; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Update Latest Stats</h1>
+    <p>
+        The following workouts were completed since the last update:
+        <ul>
+
+        {%for workout in workouts%}
+            <li>{{workout.title}} - {{workout.instructor}}</li>
+        {%endfor%}
+
+        </ul>
+    </p>
+    <p>
+        <a href="/">Home</a>
+    </p>
+</body>
+</html>

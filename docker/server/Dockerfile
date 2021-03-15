@@ -15,6 +15,14 @@ RUN pip install \
         bokeh \
     ;
 
+RUN apt-get update; \
+    apt-get install -y \
+        curl \
+        less \
+    ; \
+    apt-get clean; \
+    rm -rf /var/tmp/* /tmp/* /var/lib/apt/lists/*
+
 WORKDIR /peloton-server
 ENTRYPOINT ["/peloton-server/startup.sh"]
 

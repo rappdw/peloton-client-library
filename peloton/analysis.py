@@ -10,7 +10,10 @@ def _retrieve(directory, json_id=None):
     for file in directory.iterdir():
         if json_id is None or file.stem == json_id:
             with open(file, 'r') as fp:
-                objs[file.stem] = json.load(fp)
+                data = json.load(fp)
+                if 'end_time' in data and not data['end_time']:
+                    raise Exception(f"Workout {file.stem} has an invalid end_time. Will be unable to calculate duration.")
+                objs[file.stem] = data
     return objs
 
 
