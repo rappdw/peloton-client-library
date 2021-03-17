@@ -23,7 +23,7 @@ def yearly_projection():
     series.reset_index(inplace=True)
     series['doy'] = series.device_time_created_at.dt.dayofyear
     series.device_time_created_at = series.device_time_created_at.dt.date
-    series.drop_duplicates('device_time_created_at', keep='last')
+    series = series.drop_duplicates(subset=['device_time_created_at'], keep='last')
     series['eoy_estimate'] = ((series.mins2 / series.doy * days_in_year).round()).astype(int)
 
     curve = hv.Curve(series, ('doy', 'Day of Year'), ('eoy_estimate', 'Projection'))
