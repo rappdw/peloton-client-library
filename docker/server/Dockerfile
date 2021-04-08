@@ -9,10 +9,11 @@ COPY ./docker/server/app /peloton-server
 
 RUN pip install \
         /peloton \
-        flask \
         panel \
         holoviews \
         bokeh \
+        fastapi \
+        uvicorn \
     ;
 
 RUN apt-get update; \

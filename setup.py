@@ -34,7 +34,7 @@ setuptools.setup(
         'requests>=2.25.1'
     ],
     entry_points = {
-        'console_scripts': ['refresh_cache=peloton.update:refresh'],
+        'console_scripts': ['refresh_cache=peloton.update:refresh_cli'],
     },
     scripts=[
         'scripts/print_my_info',

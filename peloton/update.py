@@ -31,3 +31,6 @@ def refresh():
     # retrieve my user record as well
     PelotonUserFactory.me()
     return details
+
+def refresh_cli():
+    refresh()
