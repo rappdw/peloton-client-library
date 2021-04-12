@@ -24,6 +24,10 @@ RUN apt-get update; \
     apt-get clean; \
     rm -rf /var/tmp/* /tmp/* /var/lib/apt/lists/*
 
+# see: https://github.com/holoviz/panel/issues/1260;
+# for "INFO:     172.17.0.1:59206 - "GET /static/extensions/panel/css/dataframe.css HTTP/1.1" 404 Not Found"
+# occurring after switch to FastAPI
+ENV BOKEH_RESOURCES=inline
 WORKDIR /peloton-server
 ENTRYPOINT ["/peloton-server/startup.sh"]
 
