@@ -38,12 +38,16 @@ def get_personal_stats(request: Request):
         {
             "request": request,
             "yearly": {
-               'accumulated_minutes': int(analysis.accumulated_minutes),
-               'eoy_estimate': int(analysis.eoy_estimate)
+                'initial_ave_required': analysis.initial_average_required,
+                'ave_to_date': analysis.average_to_date,
+                'remaining_ave_required': analysis.remaining_average_required,
+                'accumulated_minutes': int(analysis.accumulated_minutes),
+                'remaining_minutes': analysis.remaining_minutes_required,
+                'eoy_estimate': int(analysis.eoy_estimate)
             },
             "streak": {
-                'daily': analysis.current_daily_streak,
-                'weekly': analysis.current_weekly_streak
+                 'daily': analysis.current_daily_streak,
+                 'weekly': analysis.current_weekly_streak
             }
         }
     )

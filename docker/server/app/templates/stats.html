@@ -11,24 +11,54 @@
         and (-webkit-device-pixel-ratio: 3) {
           h1 { font-size: 48px; }
           p { font-size: 36px; }
+          td { font-size: 36px;}
         }
     </style>
 </head>
 <body>
     <h1>Yearly Goal Tracking</h1>
-    <p>
-        You have exercised {{ "{:,}".format(yearly.accumulated_minutes) }} minutes so far this year.
-    </p>
-    <p>
-        We estimate you will complete {{ "{:,}".format(yearly.eoy_estimate) }} minutes by end of year.
-    </p>
-    <h1>Current Streak</h1>
-    <p>
-        Your current daily streak is {{ streak.daily }} days.
-    </p>
-    <p>
-        Your current weekly streak is {{ streak.weekly }} weeks.
-    </p>
+    <table class="tg">
+    <thead>
+      <tr>
+        <th class="tg-0lax">Metric</th>
+        <th class="tg-0lax">Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="tg-0lax">Initial Average Required</td>
+        <td class="tg-0lax">{{ "{:,.1f}".format(yearly.initial_ave_required) }}</td>
+      </tr>
+      <tr>
+        <td class="tg-0lax">Average To Date</td>
+        <td class="tg-0lax">{{ "{:,.1f}".format(yearly.ave_to_date) }}</td>
+      </tr>
+      <tr>
+        <td class="tg-0lax">Remaining Average Required</td>
+        <td class="tg-0lax">{{ "{:,.1f}".format(yearly.remaining_ave_required) }}</td>
+      </tr>
+      <tr>
+        <td class="tg-0lax">Completed Minutes</td>
+        <td class="tg-0lax">{{ "{:,}".format(yearly.accumulated_minutes) }}</td>
+      </tr>
+      <tr>
+        <td class="tg-0lax">Remaining Minutes</td>
+        <td class="tg-0lax">{{ "{:,}".format(yearly.remaining_minutes) }}</td>
+      </tr>
+      <tr>
+        <td class="tg-0lax">End of Year Projection</td>
+        <td class="tg-0lax">{{ "{:,}".format(yearly.eoy_estimate) }}</td>
+      </tr>
+      <tr>
+        <td class="tg-0lax">Daily Streak</td>
+        <td class="tg-0lax">{{ streak.daily }}</td>
+      </tr>
+      <tr>
+        <td class="tg-0lax">Weekly Streak</td>
+        <td class="tg-0lax">{{ streak.weekly }}</td>
+      </tr>
+    </tbody>
+    </table>
     <p>
         <a href="/">Home</a>
     </p>

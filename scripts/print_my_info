@@ -6,12 +6,18 @@ from peloton import Analysis
 
 if __name__ == '__main__':
     analysis = Analysis()
-    print(f'You have exercised {analysis.accumulated_minutes:,} minutes so far this year.')
-    print(f'We estimate you will complete {int(analysis.eoy_estimate):,} minutes this year.')
-    print(f'Current daily streak is {analysis.current_daily_streak:,} days.')
-    print(f'Current weekly streak is {analysis.current_weekly_streak:,} weeks.')
+    print('Stats: ')
+    print(f"{'Initial Average Required:':>30} {analysis.initial_average_required:.1f}")
+    print(f"{'Average to Date:':>30} {analysis.average_to_date:.1f}")
+    print(f"{'Remaining Average Required:':>30} {analysis.remaining_average_required:.1f}")
+    print(f"{'Completed Minutes:':>30} {analysis.accumulated_minutes:,}")
+    print(f"{'Remaining Minutes:':>30} {analysis.remaining_minutes_required:,}")
+    print(f"{'EOY Projection:':>30} {int(analysis.eoy_estimate):,}")
+    print(f"{'Daily Streak:':>30} {analysis.current_daily_streak}")
+    print(f"{'Weekly Streak:':>30} {analysis.current_weekly_streak}")
 
-    # pd.set_option("display.max_rows", None)
+
+# pd.set_option("display.max_rows", None)
     # pd.set_option("display.max_columns", None)
     # print('\n\nFollowing is the list of your workouts...\n\n')
     # print(analysis.get_printable_workouts().loc[f'{datetime.now().year}'].sort_index(ascending=False))

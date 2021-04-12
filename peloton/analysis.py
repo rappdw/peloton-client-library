@@ -30,7 +30,8 @@ class Analysis:
         self.rides = _retrieve(cache_dir / 'ride')
         self.users = _retrieve(cache_dir / 'user')
         self.metrics = _retrieve(cache_dir / 'metrics')
-        self.annual_challenge = _retrieve(cache_dir / 'challenge', '4ee56696ffcb442592607af5004503e3')
+        annual_challenge_id = '4ee56696ffcb442592607af5004503e3'
+        self.annual_challenge = _retrieve(cache_dir / 'challenge', annual_challenge_id)
 
         self.wdf = self._update_workouts(pd.DataFrame(self.workouts.values()))
         self.rdf = pd.DataFrame(self.rides.values())
@@ -48,8 +49,14 @@ class Analysis:
         # pdf = pdf.loc[f'{now.year}'].sort_index(ascending=False)
         #
         # self.accumulated_minutes = (pdf.duration.sum() // 60) + fudge_factor
-        self.accumulated_minutes = self.annual_challenge['4ee56696ffcb442592607af5004503e3']['progress']['metric_value']
+        self.accumulated_minutes = self.annual_challenge[annual_challenge_id]['progress']['metric_value']
+        self.average_to_date = self.accumulated_minutes / day_of_year
+        yearly_goal = 15000
+        self.initial_average_required = yearly_goal / days_in_year
+        self.remaining_average_required = (yearly_goal - self.accumulated_minutes) / (days_in_year - day_of_year)
+        self.remaining_minutes_required = yearly_goal - self.accumulated_minutes
         self.eoy_estimate = self.accumulated_minutes / day_of_year * days_in_year
+
 
     def get_printable_workouts(self):
         return self.get_printable_dataframe(self.wdf, self.rdf, self.idf)
