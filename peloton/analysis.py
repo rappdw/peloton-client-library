@@ -81,6 +81,9 @@ class Analysis:
             ascending=False,
             ignore_index=True
         )[['device_time_created_at']]
+        # add in today to get streak info if we are exercising today...
+        nowdf = pd.DataFrame([pd.Timestamp.now(tz='UTC')], columns=['device_time_created_at'])
+        stretch = pd.concat([nowdf, stretch], ignore_index=True)
         stretch['date'] = stretch.device_time_created_at.dt.date
         consecutive = stretch.date.diff().abs().le(d)[1:].idxmin(axis=1)
         return (datetime.now().date() - stretch[consecutive - 1:consecutive].date.iloc[0]).days + 1
